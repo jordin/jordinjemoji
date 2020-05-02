@@ -3,14 +3,14 @@ package in.jord.jordinjemoji;
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiParser;
 import in.jord.jordinjemoji.rasterisation.EmojiRasteriser;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.Resource;
+import io.github.classgraph.ResourceList;
 import org.apache.batik.transcoder.TranscoderException;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.function.Function;
 import static in.jord.jordinjemoji.util.UnicodeUtil.codePointsToUnicode;
 
 public final class EmojiManager {
-    private static final String BASE_DIRECTORY = "twemoji/assets/svg/";
+    private static final String BASE_DIRECTORY = "twemoji/assets/svg";
     public static final int PRIVATE_USE_AREA_A_START = 0xF0000;
     public static final int PRIVATE_USE_AREA_B_START = 0x100000;
 
@@ -33,7 +33,7 @@ public final class EmojiManager {
     private final EmojiRasteriser rasteriser = new EmojiRasteriser(this);
 
     public EmojiManager() throws IOException {
-        this(name -> EmojiManager.class.getClassLoader().getResourceAsStream(BASE_DIRECTORY + name));
+        this(name -> EmojiManager.class.getClassLoader().getResourceAsStream(BASE_DIRECTORY + "/" + name));
     }
 
     public EmojiManager(final Function<String, InputStream> resourceAsStream) throws IOException {
@@ -98,22 +98,20 @@ public final class EmojiManager {
     private int scanForEmoji() throws IOException {
         int emojiCount = 0;
 
-        try (final InputStream directory = this.getResourceAsStream("")) {
-            assert directory != null;
+        final ResourceList resources = new ClassGraph()
+                .whitelistPathsNonRecursive(BASE_DIRECTORY)
+                .scan()
+                .getResourcesWithExtension("svg");
 
-            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(directory, StandardCharsets.UTF_8))) {
-                String resourceName;
+        for (final Resource resource : resources) {
+            final String resourceName = resource.getPath().substring(resource.getPath().lastIndexOf('/') + 1);
+            final int codePoint = this.baseCodePoint + emojiCount;
+            final String unicodeRepresentation = codePointsToUnicode(resourceName.substring(0, resourceName.lastIndexOf(".")));
 
-                while ((resourceName = reader.readLine()) != null) {
-                    final int codePoint = this.baseCodePoint + emojiCount;
-                    final String unicodeRepresentation = codePointsToUnicode(resourceName.substring(0, resourceName.length() - ".svg".length()));
+            this.unicodeToCodePoint.put(unicodeRepresentation, Character.toString(codePoint));
+            this.codePointToResource.add(resourceName);
 
-                    this.unicodeToCodePoint.put(unicodeRepresentation, Character.toString(codePoint));
-                    this.codePointToResource.add(resourceName);
-
-                    emojiCount++;
-                }
-            }
+            emojiCount++;
         }
 
         return emojiCount;
