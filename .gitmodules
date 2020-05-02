@@ -1,0 +1,3 @@
+[submodule "src/main/resources/twemoji"]
+	path = src/main/resources/twemoji
+	url = https://github.com/twitter/twemoji

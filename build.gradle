@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+group 'in.jord'
+version '0.1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile "junit:junit:4.12"
+
+    compile "com.vdurmont:emoji-java:5.1.1"
+    compile "org.apache.xmlgraphics:batik-rasterizer-ext:1.12"
+}
