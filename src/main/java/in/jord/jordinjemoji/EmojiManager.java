@@ -22,8 +22,6 @@ import static in.jord.jordinjemoji.util.UnicodeUtil.codePointsToUnicode;
 
 public final class EmojiManager {
     private static final String BASE_DIRECTORY = "twemoji/assets/svg";
-    public static final int PRIVATE_USE_AREA_A_START = StandardUnassignedUnicodeRegion.SUPPLEMENTARY_PRIVATE_USE_AREA_A.getBaseCodePoint();
-    public static final int PRIVATE_USE_AREA_B_START = StandardUnassignedUnicodeRegion.SUPPLEMENTARY_PRIVATE_USE_AREA_B.getBaseCodePoint();
 
     private final int baseCodePoint;
     private final int emojiCount;
