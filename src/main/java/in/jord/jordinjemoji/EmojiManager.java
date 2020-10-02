@@ -3,6 +3,7 @@ package in.jord.jordinjemoji;
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiParser;
 import in.jord.jordinjemoji.rasterisation.EmojiRasteriser;
+import in.jord.jordinjemoji.util.StandardUnassignedUnicodeRegion;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ResourceList;
@@ -21,8 +22,6 @@ import static in.jord.jordinjemoji.util.UnicodeUtil.codePointsToUnicode;
 
 public final class EmojiManager {
     private static final String BASE_DIRECTORY = "twemoji/assets/svg";
-    public static final int PRIVATE_USE_AREA_A_START = 0xF0000;
-    public static final int PRIVATE_USE_AREA_B_START = 0x100000;
 
     private final int baseCodePoint;
     private final int emojiCount;
@@ -31,18 +30,6 @@ public final class EmojiManager {
     private final Map<String, String> unicodeToCodePoint;
     private final List<String> codePointToResource;
     private final EmojiRasteriser rasteriser = new EmojiRasteriser(this);
-
-    public EmojiManager() throws IOException {
-        this(name -> EmojiManager.class.getClassLoader().getResourceAsStream(BASE_DIRECTORY + "/" + name));
-    }
-
-    public EmojiManager(final Function<String, InputStream> resourceAsStream) throws IOException {
-        this.resourceAsStream = resourceAsStream;
-        this.unicodeToCodePoint = new HashMap<>();
-        this.codePointToResource = new ArrayList<>();
-        this.baseCodePoint = PRIVATE_USE_AREA_A_START;
-        this.emojiCount = this.scanForEmoji();
-    }
 
     public EmojiManager(final Function<String, InputStream> resourceAsStream,
                         final Map<String, String> unicodeToCodePoint,
@@ -56,6 +43,26 @@ public final class EmojiManager {
         this.codePointToResource = codePointToResource;
         this.baseCodePoint = baseCodePoint;
         this.emojiCount = codePointToResource.size();
+    }
+
+    public EmojiManager(final Function<String, InputStream> resourceAsStream, final int baseCodePoint) throws IOException {
+        this.resourceAsStream = resourceAsStream;
+        this.unicodeToCodePoint = new HashMap<>();
+        this.codePointToResource = new ArrayList<>();
+        this.baseCodePoint = baseCodePoint;
+        this.emojiCount = this.scanForEmoji();
+    }
+
+    public EmojiManager(final Function<String, InputStream> resourceAsStream, final StandardUnassignedUnicodeRegion region) throws IOException {
+        this(resourceAsStream, region.getBaseCodePoint());
+    }
+
+    public EmojiManager(final Function<String, InputStream> resourceAsStream) throws IOException {
+        this(resourceAsStream, StandardUnassignedUnicodeRegion.SUPPLEMENTARY_PRIVATE_USE_AREA_A);
+    }
+
+    public EmojiManager() throws IOException {
+        this(name -> EmojiManager.class.getClassLoader().getResourceAsStream(BASE_DIRECTORY + "/" + name));
     }
 
     public String convertEmojiToCodePoints(final String input) {
