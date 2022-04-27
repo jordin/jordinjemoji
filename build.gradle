@@ -10,9 +10,7 @@ repositories {
 }
 
 dependencies {
-    testCompile "junit:junit:4.12"
-
-    compile "com.vdurmont:emoji-java:5.1.1"
-    compile "org.apache.xmlgraphics:batik-rasterizer-ext:1.12"
-    compile "io.github.classgraph:classgraph:4.8.77"
+    implementation "com.vdurmont:emoji-java:5.1.1"
+    implementation 'org.apache.xmlgraphics:batik-rasterizer-ext:1.14'
+    implementation 'io.github.classgraph:classgraph:4.8.146'
 }
