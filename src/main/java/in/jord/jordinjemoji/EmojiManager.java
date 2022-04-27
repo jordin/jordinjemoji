@@ -120,17 +120,17 @@ public final class EmojiManager {
                 final String resourceName = resource.getPath();
 
                 if (resourceName.endsWith(".svg")) {
-                    final int lastSlashIdx = resourceName.lastIndexOf('/');
-                    final int lastDotIdx = resourceName.lastIndexOf('.');
+                    final int lastSlashIndex = resourceName.lastIndexOf('/');
+                    final int lastDotIndex = resourceName.lastIndexOf('.');
 
-                    if (lastDotIdx > lastSlashIdx) {
-                        final String codepoints = resourceName.substring(lastSlashIdx + 1, lastDotIdx);
+                    if (lastDotIndex > lastSlashIndex) {
+                        final String codepoints = resourceName.substring(lastSlashIndex + 1, lastDotIndex);
                         final String unicodeRepresentation = codePointsToUnicode(codepoints);
 
                         final int codePoint = this.baseCodePoint + emojiCount;
 
                         this.unicodeToCodePoint.put(unicodeRepresentation, Character.toString(codePoint));
-                        this.codePointToResource.add(resourceName);
+                        this.codePointToResource.add(resourceName.substring(lastSlashIndex + 1));
                         emojiCount++;
                     }
                 }
