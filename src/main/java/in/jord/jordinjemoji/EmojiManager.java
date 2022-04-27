@@ -6,16 +6,13 @@ import in.jord.jordinjemoji.rasterisation.EmojiRasteriser;
 import in.jord.jordinjemoji.util.StandardUnassignedUnicodeRegion;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
-import io.github.classgraph.ResourceList;
+import io.github.classgraph.ScanResult;
 import org.apache.batik.transcoder.TranscoderException;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 import static in.jord.jordinjemoji.util.UnicodeUtil.codePointsToUnicode;
@@ -45,7 +42,7 @@ public final class EmojiManager {
         this.emojiCount = codePointToResource.size();
     }
 
-    public EmojiManager(final Function<String, InputStream> resourceAsStream, final int baseCodePoint) throws IOException {
+    public EmojiManager(final Function<String, InputStream> resourceAsStream, final int baseCodePoint) {
         this.resourceAsStream = resourceAsStream;
         this.unicodeToCodePoint = new HashMap<>();
         this.codePointToResource = new ArrayList<>();
@@ -53,7 +50,7 @@ public final class EmojiManager {
         this.emojiCount = this.scanForEmoji();
     }
 
-    public EmojiManager(final Function<String, InputStream> resourceAsStream, final StandardUnassignedUnicodeRegion region) throws IOException {
+    public EmojiManager(final Function<String, InputStream> resourceAsStream, final StandardUnassignedUnicodeRegion region) {
         this(resourceAsStream, region.getBaseCodePoint());
     }
 
@@ -102,23 +99,42 @@ public final class EmojiManager {
         return this.emojiCount;
     }
 
-    private int scanForEmoji() throws IOException {
+    private static ScanResult scanClassGraph(ClassGraph classGraph) {
+        final Integer threads = Integer.getInteger("jordinjemoji.threads");
+
+        if (threads != null) {
+            return classGraph.scan(threads);
+        }
+
+        return classGraph.scan();
+    }
+
+    private int scanForEmoji() {
         int emojiCount = 0;
 
-        final ResourceList resources = new ClassGraph()
-                .whitelistPathsNonRecursive(BASE_DIRECTORY)
-                .scan()
-                .getResourcesWithExtension("svg");
+        final ClassGraph classGraph = new ClassGraph()
+                .acceptPathsNonRecursive(BASE_DIRECTORY);
 
-        for (final Resource resource : resources) {
-            final String resourceName = resource.getPath().substring(resource.getPath().lastIndexOf('/') + 1);
-            final int codePoint = this.baseCodePoint + emojiCount;
-            final String unicodeRepresentation = codePointsToUnicode(resourceName.substring(0, resourceName.lastIndexOf(".")));
+        try (ScanResult scanResult = EmojiManager.scanClassGraph(classGraph)) {
+            for (final Resource resource : scanResult.getAllResources()) {
+                final String resourceName = resource.getPath();
 
-            this.unicodeToCodePoint.put(unicodeRepresentation, Character.toString(codePoint));
-            this.codePointToResource.add(resourceName);
+                if (resourceName.endsWith(".svg")) {
+                    final int lastSlashIdx = resourceName.lastIndexOf('/');
+                    final int lastDotIdx = resourceName.lastIndexOf('.');
 
-            emojiCount++;
+                    if (lastDotIdx > lastSlashIdx) {
+                        final String codepoints = resourceName.substring(lastSlashIdx + 1, lastDotIdx);
+                        final String unicodeRepresentation = codePointsToUnicode(codepoints);
+
+                        final int codePoint = this.baseCodePoint + emojiCount;
+
+                        this.unicodeToCodePoint.put(unicodeRepresentation, Character.toString(codePoint));
+                        this.codePointToResource.add(resourceName);
+                        emojiCount++;
+                    }
+                }
+            }
         }
 
         return emojiCount;
