@@ -7,11 +7,11 @@ import java.awt.image.BufferedImage;
 public final class BufferedImageTranscoderOutput extends TranscoderOutput {
     private BufferedImage image;
 
-    public final void setImage(final BufferedImage image) {
+    public void setImage(final BufferedImage image) {
         this.image = image;
     }
 
-    public final BufferedImage getImage() {
+    public BufferedImage getImage() {
         return this.image;
     }
 }

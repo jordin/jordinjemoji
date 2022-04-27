@@ -13,12 +13,12 @@ public final class BufferedImageTranscoder extends ImageTranscoder {
     }
 
     @Override
-    public final BufferedImage createImage(final int width, final int height) {
+    public BufferedImage createImage(final int width, final int height) {
         return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
     }
 
     @Override
-    public final void writeImage(final BufferedImage image, final TranscoderOutput transcoderOutput) {
+    public void writeImage(final BufferedImage image, final TranscoderOutput transcoderOutput) {
         if (transcoderOutput instanceof BufferedImageTranscoderOutput) {
             ((BufferedImageTranscoderOutput) transcoderOutput).setImage(image);
         }

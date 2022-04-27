@@ -7,7 +7,7 @@ public enum StandardUnassignedUnicodeRegion {
 
     private final int baseCodePoint;
 
-    StandardUnassignedUnicodeRegion(int baseCodePoint) {
+    StandardUnassignedUnicodeRegion(final int baseCodePoint) {
         this.baseCodePoint = baseCodePoint;
     }
 

@@ -54,11 +54,11 @@ public final class EmojiManager {
         this(resourceAsStream, region.getBaseCodePoint());
     }
 
-    public EmojiManager(final Function<String, InputStream> resourceAsStream) throws IOException {
+    public EmojiManager(final Function<String, InputStream> resourceAsStream) {
         this(resourceAsStream, StandardUnassignedUnicodeRegion.SUPPLEMENTARY_PRIVATE_USE_AREA_A);
     }
 
-    public EmojiManager() throws IOException {
+    public EmojiManager() {
         this(name -> EmojiManager.class.getClassLoader().getResourceAsStream(BASE_DIRECTORY + "/" + name));
     }
 
@@ -99,7 +99,7 @@ public final class EmojiManager {
         return this.emojiCount;
     }
 
-    private static ScanResult scanClassGraph(ClassGraph classGraph) {
+    private static ScanResult scanClassGraph(final ClassGraph classGraph) {
         final Integer threads = Integer.getInteger("jordinjemoji.threads");
 
         if (threads != null) {
@@ -115,7 +115,7 @@ public final class EmojiManager {
         final ClassGraph classGraph = new ClassGraph()
                 .acceptPathsNonRecursive(BASE_DIRECTORY);
 
-        try (ScanResult scanResult = EmojiManager.scanClassGraph(classGraph)) {
+        try (final ScanResult scanResult = EmojiManager.scanClassGraph(classGraph)) {
             for (final Resource resource : scanResult.getAllResources()) {
                 final String resourceName = resource.getPath();
 

@@ -1,16 +1,17 @@
 plugins {
     id 'java'
+    id 'java-library'
 }
 
 group 'in.jord'
-version '0.2.2-SNAPSHOT'
+version '0.2.3-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    api 'org.apache.xmlgraphics:batik-rasterizer-ext:1.14'
     implementation "com.vdurmont:emoji-java:5.1.1"
-    implementation 'org.apache.xmlgraphics:batik-rasterizer-ext:1.14'
     implementation 'io.github.classgraph:classgraph:4.8.146'
 }

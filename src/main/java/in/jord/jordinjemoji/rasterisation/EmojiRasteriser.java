@@ -15,7 +15,7 @@ public final class EmojiRasteriser {
         this.emojiManager = emojiManager;
     }
 
-    public final BufferedImage rasteriseEmoji(final String name, final int width, final int height) throws IOException, TranscoderException {
+    public BufferedImage rasteriseEmoji(final String name, final int width, final int height) throws IOException, TranscoderException {
         try (final InputStream emoji = this.emojiManager.getResourceAsStream(name)) {
             return rasteriseSvg(emoji, width, height);
         }
