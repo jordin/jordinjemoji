@@ -1,4 +1,5 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'java'
     id 'java-library'
 }
@@ -11,7 +12,16 @@ repositories {
 }
 
 dependencies {
-    api 'org.apache.xmlgraphics:batik-rasterizer-ext:1.14'
     implementation "com.vdurmont:emoji-java:5.1.1"
     implementation 'io.github.classgraph:classgraph:4.8.146'
 }
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "jordinjemoji"
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+

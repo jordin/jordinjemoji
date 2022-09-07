@@ -2,17 +2,16 @@ package in.jord.jordinjemoji;
 
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiParser;
-import in.jord.jordinjemoji.rasterisation.EmojiRasteriser;
 import in.jord.jordinjemoji.util.StandardUnassignedUnicodeRegion;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
-import org.apache.batik.transcoder.TranscoderException;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import static in.jord.jordinjemoji.util.UnicodeUtil.codePointsToUnicode;
@@ -23,43 +22,42 @@ public final class EmojiManager {
     private final int baseCodePoint;
     private final int emojiCount;
 
-    private final Function<String, InputStream> resourceAsStream;
+    private final Function<String, URL> resourceAsUrl;
     private final Map<String, String> unicodeToCodePoint;
     private final List<String> codePointToResource;
-    private final EmojiRasteriser rasteriser = new EmojiRasteriser(this);
 
-    public EmojiManager(final Function<String, InputStream> resourceAsStream,
+    public EmojiManager(final Function<String, URL> resourceAsUrl,
                         final Map<String, String> unicodeToCodePoint,
                         final List<String> codePointToResource,
                         final int baseCodePoint) {
         if (unicodeToCodePoint.size() != codePointToResource.size()) {
             throw new IllegalArgumentException("Unicode to code point map and the code point to resource list must have the same cardinality.");
         }
-        this.resourceAsStream = resourceAsStream;
+        this.resourceAsUrl = resourceAsUrl;
         this.unicodeToCodePoint = unicodeToCodePoint;
         this.codePointToResource = codePointToResource;
         this.baseCodePoint = baseCodePoint;
         this.emojiCount = codePointToResource.size();
     }
 
-    public EmojiManager(final Function<String, InputStream> resourceAsStream, final int baseCodePoint) {
-        this.resourceAsStream = resourceAsStream;
+    public EmojiManager(final Function<String, URL> resourceAsUrl, final int baseCodePoint) {
+        this.resourceAsUrl = resourceAsUrl;
         this.unicodeToCodePoint = new HashMap<>();
         this.codePointToResource = new ArrayList<>();
         this.baseCodePoint = baseCodePoint;
         this.emojiCount = this.scanForEmoji();
     }
 
-    public EmojiManager(final Function<String, InputStream> resourceAsStream, final StandardUnassignedUnicodeRegion region) {
-        this(resourceAsStream, region.getBaseCodePoint());
+    public EmojiManager(final Function<String, URL> resourceAsUrl, final StandardUnassignedUnicodeRegion region) {
+        this(resourceAsUrl, region.getBaseCodePoint());
     }
 
-    public EmojiManager(final Function<String, InputStream> resourceAsStream) {
-        this(resourceAsStream, StandardUnassignedUnicodeRegion.SUPPLEMENTARY_PRIVATE_USE_AREA_A);
+    public EmojiManager(final Function<String, URL> resourceAsUrl) {
+        this(resourceAsUrl, StandardUnassignedUnicodeRegion.SUPPLEMENTARY_PRIVATE_USE_AREA_A);
     }
 
     public EmojiManager() {
-        this(name -> EmojiManager.class.getClassLoader().getResourceAsStream(BASE_DIRECTORY + "/" + name));
+        this(name -> EmojiManager.class.getClassLoader().getResource(BASE_DIRECTORY + "/" + name));
     }
 
     public String convertEmojiToCodePoints(final String input) {
@@ -72,8 +70,8 @@ public final class EmojiManager {
         });
     }
 
-    public InputStream getResourceAsStream(final String name) {
-        return this.resourceAsStream.apply(name);
+    public URL getResourceAsUrl(final String name) {
+        return this.resourceAsUrl.apply(name);
     }
 
     public String getResource(final int codePoint) {
@@ -81,10 +79,6 @@ public final class EmojiManager {
             throw new IllegalArgumentException("Invalid code point.");
         }
         return this.codePointToResource.get(codePoint - this.baseCodePoint);
-    }
-
-    public BufferedImage rasterise(final int codePoint, final int width, final int height) throws IOException, TranscoderException {
-        return this.rasteriser.rasteriseEmoji(this.getResource(codePoint), width, height);
     }
 
     public boolean hasCodePoint(final int codePoint) {
